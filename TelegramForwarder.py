@@ -97,8 +97,8 @@ async def main():
     # Add argument parser
     parser = argparse.ArgumentParser(description='Telegram Message Forwarder')
     parser.add_argument('--f', action='store_true', help='Start in forward mode')
-    parser.add_argument('--fs', type=int, help='Source chat ID when started in forward mode')
-    parser.add_argument('--fd', type=int, help='Destination chat ID when started in forward mode')
+    parser.add_argument('--fs', type=str, help='Source chat ID when started in forward mode')
+    parser.add_argument('--fd', type=str, help='Destination chat ID when started in forward mode')
     parser.add_argument('--fk', type=str, help='Keywords for filtering messages in forward mode (comma-separated)')
     
     args = parser.parse_args()
@@ -117,13 +117,24 @@ async def main():
     forwarder = TelegramForwarder(api_id, api_hash, phone_number)
     
     # Check for forward mode
-    if args.f and args.fs is not None and args.fd is not None:
-        print(f"Starting forward mode from chat {args.fs} to chat {args.fd}")
+    if args.f:
+        if not args.fs or not args.fd:
+            print("Error: Both --fs (source chat ID) and --fd (destination chat ID) are required in forward mode")
+            return
+            
+        try:
+            source_id = int(args.fs)
+            dest_id = int(args.fd)
+        except ValueError:
+            print("Error: Chat IDs must be valid integers")
+            return
+            
+        print(f"Starting forward mode from chat {source_id} to chat {dest_id}")
         keywords = []
         if args.fk:
             keywords = [k.strip().lower() for k in args.fk.split(',')]
             print(f"Filtering messages with keywords: {keywords}")
-        await forwarder.forward_messages_to_channel(int(args.fs), int(args.fd), keywords)
+        await forwarder.forward_messages_to_channel(source_id, dest_id, keywords)
         return
 
     # Show original menu if no parameters are set
@@ -139,7 +150,8 @@ async def main():
         source_chat_id = int(input("Enter the source chat ID: "))
         destination_channel_id = int(input("Enter the destination chat ID: "))
         print("Enter keywords if you want to forward messages with specific keywords, or leave blank to forward every message!")
-        keywords = input("Put keywords (comma separated if multiple, or leave blank): ").split(",")
+        keywords_input = input("Put keywords (comma separated if multiple, or leave blank): ").strip()
+        keywords = [k.strip() for k in keywords_input.split(",")] if keywords_input else []
         
         await forwarder.forward_messages_to_channel(source_chat_id, destination_channel_id, keywords)
     else:
