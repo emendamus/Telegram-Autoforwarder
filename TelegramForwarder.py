@@ -2,6 +2,7 @@ import time
 import asyncio
 from telethon.sync import TelegramClient
 from telethon import errors
+import argparse
 
 class TelegramForwarder:
     def __init__(self, api_id, api_hash, phone_number):
@@ -93,6 +94,15 @@ def write_credentials(api_id, api_hash, phone_number):
         file.write(phone_number + "\n")
 
 async def main():
+    # Add argument parser
+    parser = argparse.ArgumentParser(description='Telegram Message Forwarder')
+    parser.add_argument('--f', action='store_true', help='Start in forward mode')
+    parser.add_argument('--fs', type=int, help='Source chat ID when started in forward mode')
+    parser.add_argument('--fd', type=int, help='Destination chat ID when started in forward mode')
+    parser.add_argument('--fk', type=str, help='Keywords for filtering messages in forward mode (comma-separated)')
+    
+    args = parser.parse_args()
+
     # Attempt to read credentials from file
     api_id, api_hash, phone_number = read_credentials()
 
@@ -106,6 +116,17 @@ async def main():
 
     forwarder = TelegramForwarder(api_id, api_hash, phone_number)
     
+    # Check for forward mode
+    if args.f and args.fs is not None and args.fd is not None:
+        print(f"Starting forward mode from chat {args.fs} to chat {args.fd}")
+        keywords = []
+        if args.fk:
+            keywords = [k.strip().lower() for k in args.fk.split(',')]
+            print(f"Filtering messages with keywords: {keywords}")
+        await forwarder.forward_messages_to_channel(int(args.fs), int(args.fd), keywords)
+        return
+
+    # Show original menu if no parameters are set
     print("Choose an option:")
     print("1. List Chats")
     print("2. Forward Messages")

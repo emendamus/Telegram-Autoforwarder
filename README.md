@@ -46,6 +46,25 @@ You can specify one or more keywords that, if found in a message, trigger the fo
    - List Chats: View a list of all chats you're a part of and select the ones to use for message forwarding.
    - Forward Messages: Enter the source chat ID, destination chat ID, and keywords to start forwarding messages.
 
+## Command-Line Parameters
+
+The script can be run with the following command-line parameters:
+
+- `--f`: Start the script in forward mode.
+- `--fs <source_chat_id>`: Specify the source chat ID from which messages will be forwarded.
+- `--fd <destination_chat_id>`: Specify the destination chat ID to which messages will be forwarded.
+- `--fk <keyword>`: Specify keywords that will trigger the forwarding process for messages containing it.
+
+### Example Usage
+
+To start the script in forward mode, use the following command:
+
+```bash
+python TelegramForwarder.py --f --fs -123 --fd -456 --fk "keyword1,keyword2"
+```
+
+In this example, messages containing the keyword `keyword1` or `keyword2` will be forwarded from the chat with ID `-123` to the chat with ID `-456`. If you do not provide these parameters, the script will prompt you to choose an option from the menu.
+
 ## Notes
 
 - Remember to keep your API credentials secure and do not share them publicly.
